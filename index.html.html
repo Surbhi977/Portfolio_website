@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Surbhi Saini</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html, body { background:#242426; }
+    body {
+      font-family:'Sora', system-ui, sans-serif;
+      color:#818181;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+    }
+    a { color:inherit; text-decoration:none; }
+    img { display:block; user-select:none; -webkit-user-drag:none; }
+
+    /* ── HEADER ───────────────────────────────── */
+    .site-header {
+      position:fixed; top:0; left:0; right:0;
+      height:120px; z-index:100;
+      pointer-events:none;
+    }
+    .site-header > * { pointer-events:auto; }
+    .showreel {
+      position:absolute; top:38px; left:69px;
+      padding:14px 28px;
+      background:#2e2e30;
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:14px;
+      color:#fff;
+      font-family:inherit;
+      font-size:22px; font-weight:500;
+      letter-spacing:0.16px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.5);
+      cursor:pointer;
+      transition:transform .25s ease, background .25s ease;
+      overflow:hidden;
+    }
+    .showreel::after {
+      content:'';
+      position:absolute;
+      top:0; left:-100%; width:60%; height:100%;
+      background:linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.06) 60%, transparent 80%);
+      animation:shimmer 3.5s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0%{left:-100%} 45%{left:150%} 100%{left:150%} }
+    .showreel:hover { transform:translateY(-1px); background:#37373a; }
+
+    .thread {
+      position:absolute;
+      top:100px; left:120px;
+      width:14px; height:44px;
+      transform-origin:top center;
+      animation:thread-sway 1.8s cubic-bezier(.45,0,.55,1) infinite;
+      z-index:101; cursor:pointer; pointer-events:auto;
+    }
+    .thread-line {
+      position:absolute; top:0; bottom:14px; left:50%;
+      width:1.2px; transform:translateX(-50%);
+      background:linear-gradient(to bottom, rgba(173,173,182,0.05) 0%, rgba(173,173,182,0.35) 30%, rgba(220,220,220,0.85) 100%);
+    }
+    .thread-bead {
+      position:absolute; bottom:0; left:50%;
+      width:14px; height:14px; margin-left:-7px;
+      border-radius:50%;
+      background:radial-gradient(circle at 35% 30%, #fff 0%, #d8d8d8 38%, #6b6b6b 100%);
+      box-shadow:0 0 12px rgba(255,255,255,0.14), 0 4px 10px rgba(0,0,0,0.5), inset -2px -3px 4px rgba(0,0,0,0.3), inset 2px 2px 5px rgba(255,255,255,0.5);
+      animation:bead-glow 2.8s ease-in-out infinite;
+      transition:transform .25s ease;
+    }
+    .thread:hover .thread-bead { transform:scale(1.15); }
+    .thread.pulling { animation:none; transform:rotate(0deg); }
+    .thread.pulling .thread-bead { animation:none; }
+    @keyframes thread-sway { 0%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} 100%{transform:rotate(-5deg)} }
+    @keyframes bead-glow {
+      0%,100% { box-shadow:0 0 12px rgba(255,255,255,0.14), 0 4px 10px rgba(0,0,0,0.5), inset -2px -3px 4px rgba(0,0,0,0.3), inset 2px 2px 5px rgba(255,255,255,0.5); }
+      50% { box-shadow:0 0 22px rgba(255,255,255,0.32), 0 4px 14px rgba(0,0,0,0.55), inset -2px -3px 4px rgba(0,0,0,0.3), inset 2px 2px 5px rgba(255,255,255,0.55); }
+    }
+
+    /* ── SHOWREEL CURTAIN ─────────────────────── */
+    .curtain { position:fixed; inset:0; background:#000; opacity:0; pointer-events:none; z-index:200; }
+    .curtain.active { pointer-events:auto; }
+    .video-modal {
+      position:fixed; top:50%; left:50%;
+      width:min(1280px, 90vw); aspect-ratio:16/9;
+      transform:translate(-50%, -50%) scale(.94);
+      opacity:0; pointer-events:none; z-index:300;
+      border-radius:10px; overflow:hidden;
+      box-shadow:0 40px 100px rgba(0,0,0,0.75);
+      transition:opacity .55s ease, transform .55s cubic-bezier(.34,1.56,.64,1);
+    }
+    .video-modal.active { opacity:1; transform:translate(-50%, -50%) scale(1); pointer-events:auto; }
+    .video-modal iframe { width:100%; height:100%; border:none; display:block; }
+    .curtain-close {
+      position:fixed; top:28px; right:28px;
+      width:44px; height:44px; border-radius:50%;
+      border:1px solid rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.04); color:#fff;
+      font-family:inherit; font-size:18px; line-height:1;
+      cursor:pointer; z-index:350; opacity:0; pointer-events:none;
+      transition:opacity .3s ease, transform .25s ease, background .25s ease;
+      display:flex; align-items:center; justify-content:center;
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    }
+    .curtain-close.active { opacity:1; pointer-events:auto; }
+    .curtain-close:hover { background:rgba(255,255,255,0.12); transform:rotate(90deg); }
+
+    .nav { position:absolute; top:50px; right:97px; display:flex; gap:68px; align-items:center; }
+    .nav a { color:#818181; font-size:20px; letter-spacing:0.14px; transition:color .2s ease; }
+    .nav a:hover { color:#fff; }
+
+    /* ── CAROUSEL ─────────────────────────────── */
+    .carousel-section {
+      position:relative; width:100%; height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      overflow-x:clip; overflow-y:visible;
+    }
+    .carousel-stage { position:relative; width:100%; height:900px; }
+    .card {
+      position:absolute; left:50%; top:48%;
+      width:305px; height:490px; border-radius:22px;
+      overflow:hidden; background:#1a1a1c;
+      box-shadow:0 30px 60px rgba(0,0,0,0.55), 0 0 30px rgba(0,0,0,0.4);
+      cursor:pointer; will-change:transform; visibility:hidden;
+      transition:box-shadow 0.5s cubic-bezier(.25,.46,.45,.94);
+    }
+    .card::after {
+      content:''; position:absolute; inset:0;
+      background:rgba(0,0,0,0); border-radius:22px;
+      transition:background 0.4s ease; pointer-events:none; z-index:2;
+    }
+    .card.dimmed::after { background:rgba(0,0,0,0.50); }
+    .card.hovered {
+      box-shadow:0 50px 100px rgba(0,0,0,0.6), 0 0 40px rgba(255,255,255,0.08), 0 0 80px rgba(255,255,255,0.04);
+    }
+    .card.ready { visibility:visible; }
+    .card img { width:100%; height:100%; object-fit:cover; }
+
+    .scroll-hint {
+      position:absolute; bottom:48px; left:50%;
+      transform:translateX(-50%);
+      display:flex; align-items:center; gap:10px;
+      color:rgba(255,255,255,0.35);
+      font-size:16px; letter-spacing:0.18em;
+      animation:bob 2.4s ease-in-out infinite;
+      pointer-events:none; user-select:none;
+    }
+    @keyframes bob { 0%,100%{transform:translate(-50%,0);opacity:.5} 50%{transform:translate(-50%,4px);opacity:1} }
+
+    .site-footer {
+      width:100%; padding:80px 24px 64px;
+      display:flex; justify-content:center; gap:158px; flex-wrap:wrap; background:#242426;
+    }
+    .site-footer a { color:#818181; font-size:16px; letter-spacing:0.165px; transition:color .2s ease; white-space:nowrap; }
+    .site-footer a:hover { color:#fff; }
+
+    /* ── TRANSITION OVERLAY ───────────────────── */
+    .page-overlay { position:fixed; inset:0; background:#242426; z-index:500; opacity:0; pointer-events:none; }
+
+    /* ── HOMEPAGE WRAPPER ────────────────────── */
+    .homepage.hidden { display:none; }
+
+    /* ── PROJECT PAGE ────────────────────────── */
+    .project-page { display:none; min-height:100vh; background:#242426; padding-bottom:120px; }
+    .project-page.active { display:block; }
+    .project-header {
+      position:fixed; top:0; left:0; right:0; height:80px; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 97px 0 69px; pointer-events:none;
+      background:#242426;
+      transition:opacity 0.4s ease, transform 0.4s ease;
+    }
+    .project-header.header-hidden {
+      opacity:0;
+      transform:translateY(-100%);
+      pointer-events:none !important;
+    }
+    .project-header > * { pointer-events:auto; }
+    .back-btn {
+      display:flex; align-items:center; gap:10px;
+      color:#818181; font-family:inherit; font-size:20px; letter-spacing:0.14px;
+      background:none; border:none; cursor:pointer; transition:color .2s ease;
+    }
+    .back-btn:hover { color:#fff; }
+    .back-btn svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .project-nav { display:flex; gap:68px; align-items:center; }
+    .project-nav a { color:#818181; font-size:20px; letter-spacing:0.14px; transition:color .2s ease; }
+    .project-nav a:hover { color:#fff; }
+
+    /* ── PROJECT CONTENT ──────────────────────── */
+    .project-title {
+      text-align:center; padding:100px 0 48px;
+      font-size:40px; font-weight:500; line-height:130%; color:#FFFFFF;
+    }
+    .project-title span { color:#FFFFFF; }
+    .project-hero-media {
+      width:1164px; max-width:calc(100% - 48px);
+      margin:0 auto 80px; aspect-ratio:16/9;
+      border-radius:24px; overflow:hidden; background:#1a1a1c;
+    }
+    .project-hero-media video,
+    .project-hero-media iframe { width:100%; height:100%; border:none; display:block; object-fit:cover; }
+    .project-content { width:1164px; max-width:calc(100% - 48px); margin:0 auto; }
+    .section-label { font-size:24px; font-weight:500; line-height:171%; color:#E8E8E8; margin-bottom:12px; }
+    .section-text { font-size:20px; font-weight:400; line-height:171%; color:#CBCACF; margin-bottom:16px; }
+    .section-link {
+      font-size:20px; font-weight:400; line-height:171%; color:#82A6F8;
+      text-decoration:underline; text-underline-offset:3px;
+      transition:color .2s ease; display:inline-block; margin-bottom:48px;
+    }
+    .section-link:hover { color:#a8c4ff; }
+    .section-spacer { height:64px; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; margin-bottom:64px; }
+    .two-col--top { align-items:start; }
+    .col-media { border-radius:18px; overflow:hidden; background:#fff; aspect-ratio:578/325; }
+    .col-media video, .col-media iframe { width:100%; height:100%; border:none; display:block; object-fit:cover; }
+    .video-placeholder {
+      width:100%; height:100%; background:#1a1a1c;
+      display:flex; align-items:center; justify-content:center;
+      color:#555; font-size:15px; letter-spacing:0.02em;
+    }
+    .video-placeholder--light { background:#fff; color:#999; }
+    .role-card {
+      width:1082px; max-width:calc(100% - 48px);
+      margin:120px auto 0; background:#101010;
+      border-radius:12px; padding:32px 48px; text-align:center;
+    }
+    .role-card .section-label { margin-bottom:8px; }
+    .role-card .section-text { margin-bottom:0; }
+
+    /* ── HERO VIDEO PLAY OVERLAY ─────────────── */
+    .hero-play-wrapper {
+      position:relative; cursor:pointer;
+    }
+    .hero-play-overlay {
+      position:absolute; inset:0; z-index:5;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,0.35);
+      transition:background 0.3s ease;
+    }
+    .hero-play-overlay:hover { background:rgba(0,0,0,0.2); }
+    .hero-play-overlay svg {
+      width:72px; height:72px;
+      filter:drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+      transition:transform 0.25s ease;
+    }
+    .hero-play-overlay:hover svg { transform:scale(1.08); }
+    .hero-play-overlay.hidden { display:none; }
+
+    /* ── SCROLL REVEAL ────────────────────────── */
+    .reveal {
+      opacity:0;
+      transform:translateY(30px);
+      transition:opacity 0.7s cubic-bezier(.25,.46,.45,.94), transform 0.7s cubic-bezier(.25,.46,.45,.94);
+    }
+    .reveal.visible {
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    /* ── LOTTIE LAYOUTS ──────────────────────── */
+    .lottie-trio {
+      width:1164px; max-width:calc(100% - 48px);
+      margin:0 auto 64px;
+      display:grid; grid-template-columns:repeat(3, 1fr); gap:24px;
+      align-items:end;
+    }
+    .lottie-trio-item {
+      overflow:hidden;
+      border-radius:24px;
+      background:transparent;
+    }
+    .lottie-trio-item lottie-player { width:100%; height:auto; }
+
+    .lottie-fullwidth {
+      width:1164px; max-width:calc(100% - 48px);
+      margin:0 auto 64px;
+      overflow:visible;
+      background:transparent;
+    }
+    .lottie-fullwidth lottie-player { width:100%; height:auto; }
+
+    .lottie-duo {
+      width:1164px; max-width:calc(100% - 48px);
+      margin:0 auto 64px;
+      display:grid; grid-template-columns:1fr 1fr; gap:24px;
+    }
+    .lottie-duo-item {
+      overflow:visible;
+      background:transparent;
+    }
+    .lottie-duo-item lottie-player { width:100%; height:auto; }
+
+    /* ── FEATURE BOXES ───────────────────────── */
+    .feature-box {
+      width:1164px; max-width:calc(100% - 48px);
+      margin:0 auto;
+      border-radius:24px; overflow:hidden;
+      padding:64px;
+    }
+    .feature-box--dark {
+      background:linear-gradient(180deg, #2a2a30 0%, #1c1c20 100%);
+    }
+    .feature-box--gradient {
+      background:linear-gradient(180deg, #28282c 0%, #1a1a1e 100%);
+    }
+    .feature-box-inner {
+      display:grid; grid-template-columns:1fr 1fr; gap:48px;
+      align-items:center;
+    }
+    .feature-box-inner--reverse {
+      direction:rtl;
+    }
+    .feature-box-inner--reverse > * {
+      direction:ltr;
+    }
+    .feature-box-phone {
+      border-radius:18px; overflow:hidden;
+      position:relative;
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto;
+    }
+    .feature-box-phone .box-bg-image {
+      width:100%; height:100%;
+      object-fit:cover; display:block;
+    }
+    .feature-box-phone lottie-player {
+      position:absolute;
+      inset:0;
+      width:100%; height:100%;
+      z-index:1;
+    }
+    .phone-placeholder {
+      width:100%; min-height:300px;
+      background:#333338; border-radius:18px;
+      display:flex; align-items:center; justify-content:center;
+      color:#666; font-size:14px; text-align:center; padding:24px;
+    }
+    .feature-box-title {
+      font-size:36px; font-weight:500; line-height:130%;
+      color:#FFFFFF; margin-bottom:24px;
+    }
+    .feature-box-text {
+      font-size:16px; font-weight:400; line-height:180%;
+      color:#CBCACF;
+    }
+    .feature-box-text .bullet {
+      color:#E85D75; margin-right:6px;
+    }
+
+    /* ── FEATURE IMAGE BOXES ─────────────────── */
+    .feature-img-box {
+      width:1164px; max-width:calc(100% - 48px);
+      margin:0 auto;
+      position:relative;
+      border-radius:24px;
+      overflow:hidden;
+    }
+    .feature-img-bg {
+      width:100%; height:auto;
+      display:block;
+    }
+    .feature-lottie {
+      position:absolute;
+      top:0; bottom:0;
+      overflow:hidden;
+    }
+    .feature-lottie--left {
+      left:5%;
+      width:42%;
+      display:flex;
+      align-items:stretch;
+      justify-content:center;
+      top:35px;
+    }
+    .feature-lottie lottie-player {
+      width:110%; height:110%;
+      margin:-2% 0 -8% 0;
+    }
+    .feature-lottie--small {
+      left:3%;
+      width:40%;
+      top:250px;
+    }
+    .feature-lottie--small lottie-player {
+      width:85%; height:85%;
+      margin:0 auto;
+    }
+
+    /* ── VISA PROJECT ─────────────────────────── */
+    .visa-lottie-hero {
+      display:flex; align-items:flex-start; justify-content:flex-start;
+    }
+    .visa-lottie-hero lottie-player {
+      width:100%; max-width:280px;
+    }
+    .visa-hero-grid {
+      display:grid;
+      grid-template-columns:35% 1fr;
+      gap:40px;
+      align-items:start;
+      margin-bottom:64px;
+    }
+    .lottie-placeholder-tall {
+      width:100%; aspect-ratio:9/16; max-width:300px;
+      background:#2a2a2e; border-radius:18px;
+      display:flex; align-items:center; justify-content:center;
+      color:#555; font-size:14px; text-align:center; padding:24px;
+    }
+    .visa-lottie-container {
+      width:1164px; max-width:calc(100% - 48px);
+      margin:0 auto;
+      background:#1a1a1e;
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:24px;
+      padding:24px 12px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .visa-lottie-trio {
+      display:grid; grid-template-columns:repeat(3, 1fr); gap:0;
+      width:100%;
+      align-items:center;
+      justify-items:center;
+    }
+    .visa-lottie-item {
+      display:flex; align-items:center; justify-content:center;
+      height:640px;
+      width:100%;
+    }
+    .visa-lottie-item lottie-player {
+      height:100%; width:auto; max-width:100%;
+    }
+    .lottie-placeholder-phone {
+      width:220px; aspect-ratio:9/16;
+      background:#333338; border-radius:18px;
+      display:flex; align-items:center; justify-content:center;
+      color:#555; font-size:14px; text-align:center; padding:16px;
+    }
+
+    /* ── DOTP PROJECT ─────────────────────────── */
+    .dotp-hero-grid {
+      display:grid;
+      grid-template-columns:35% 1fr;
+      gap:40px;
+      align-items:center;
+      margin-bottom:64px;
+    }
+    .dotp-lottie-hero {
+      display:flex; align-items:center; justify-content:center;
+    }
+    .dotp-lottie-row {
+      width:1164px; max-width:calc(100% - 48px);
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:24px;
+      align-items:start;
+    }
+    .dotp-lottie-item {
+      display:flex; align-items:center; justify-content:center;
+    }
+    .dotp-lottie-item .lottie-placeholder-tall {
+      max-width:303px; width:100%;
+    }
+    .dotp-lottie-item lottie-player {
+      width:100%; max-width:303px; height:auto;
+      border-radius:24px;
+    }
+    .dotp-video-wrapper {
+      width:100%; max-width:303px;
+      aspect-ratio:9/16;
+      border-radius:24px;
+      overflow:hidden;
+      background:#1a1a1c;
+    }
+    .dotp-video-wrapper iframe {
+      width:100%; height:100%;
+      border:none; display:block;
+    }
+
+    /* ── BANKS PROJECT ────────────────────────── */
+    .banks-video-duo {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:24px;
+      margin-bottom:64px;
+    }
+    .banks-video-item {
+      border-radius:18px;
+      overflow:hidden;
+      background:#1a1a1c;
+      aspect-ratio:578/325;
+    }
+    .banks-video-item video,
+    .banks-video-item iframe {
+      width:100%; height:100%;
+      border:none; display:block;
+      object-fit:cover;
+    }
+
+    @media (max-width:900px) {
+      .nav { gap:32px; right:32px; }
+      .nav a { font-size:16px; }
+      .showreel { left:24px; font-size:18px; padding:10px 20px; }
+      .card { width:240px; height:386px; }
+      .site-footer { gap:32px; padding:48px 16px; }
+      .site-footer a { font-size:16px; }
+      .project-header { padding:0 32px; }
+      .project-nav { gap:32px; }
+      .project-nav a { font-size:16px; }
+      .project-title { font-size:28px; padding-top:80px; }
+      .project-content { max-width:calc(100% - 32px); }
+      .two-col { grid-template-columns:1fr; }
+      .role-card { max-width:calc(100% - 32px); padding:24px; }
+      .lottie-trio { grid-template-columns:1fr; max-width:calc(100% - 32px); }
+      .lottie-duo { grid-template-columns:1fr; max-width:calc(100% - 32px); }
+      .lottie-fullwidth { max-width:calc(100% - 32px); }
+      .feature-box { max-width:calc(100% - 32px); padding:32px; }
+      .feature-box-inner { grid-template-columns:1fr; }
+      .feature-box-inner--reverse { direction:ltr; }
+      .feature-box-title { font-size:24px; }
+      .feature-img-box { max-width:calc(100% - 32px); }
+      .feature-lottie--left { width:50%; }
+      .visa-lottie-container { max-width:calc(100% - 32px); padding:24px 16px; }
+      .visa-lottie-trio { grid-template-columns:1fr; gap:16px; }
+      .visa-lottie-item lottie-player { max-width:200px; }
+      .dotp-hero-grid { grid-template-columns:1fr; }
+      .dotp-lottie-row { grid-template-columns:1fr; max-width:calc(100% - 32px); }
+      .banks-video-duo { grid-template-columns:1fr; }
+      .about-content { padding:80px 24px 80px; }
+      .about-hero-title { font-size:48px; }
+      .about-photos { height:auto; flex-direction:column; gap:24px; padding-top:24px; }
+      .about-photo { position:relative; left:auto !important; top:auto !important; transform:rotate(0deg) !important; }
+    }
+
+    /* ── ABOUT ME PAGE ───────────────────────── */
+    .about-content {
+      max-width:960px;
+      margin:0 auto;
+      padding:140px 24px 120px;
+    }
+    .about-hero-title {
+      width:100%;
+      max-width:820px;
+      margin:0 auto 80px;
+      display:block;
+      pointer-events:none;
+    }
+    .about-hero-title lottie-player {
+      width:100%; height:auto;
+      display:block;
+    }
+    .about-paragraphs { margin-bottom:100px; }
+    .about-text {
+      font-size:clamp(18px, 1.6vw, 24px);
+      font-weight:400;
+      line-height:171%;
+      color:#CBCACF;
+      text-align:justify;
+      margin-bottom:36px;
+    }
+    .about-text:last-of-type { margin-bottom:0; }
+    .about-text-small {
+      font-size:clamp(16px, 1.3vw, 20px);
+      font-weight:400;
+      line-height:171%;
+      color:#CBCACF;
+      text-align:center;
+      margin-top:48px;
+    }
+    .about-text-small a {
+      color:#CBCACF;
+      border-bottom:1px solid rgba(242,237,221,0.4);
+      transition:color .2s, border-color .2s;
+    }
+    .about-text-small a:hover { color:#fff; border-bottom-color:#fff; }
+    .about-photos {
+      position:relative;
+      height:500px;
+      margin-top:120px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .about-photo {
+      position:absolute;
+      width:300px;
+      cursor:pointer;
+      transition:transform .5s cubic-bezier(.34,1.56,.64,1), filter .4s ease;
+      will-change:transform;
+      filter:drop-shadow(0 20px 35px rgba(0,0,0,0.55));
+    }
+    .about-photo-img { display:block; line-height:0; }
+    .about-photo-img img {
+      width:100%; height:auto; display:block;
+    }
+    .about-photo-1 {
+      left:calc(50% - 380px); top:30px;
+      transform:rotate(-8deg);
+      z-index:1;
+    }
+    .about-photo-2 {
+      left:calc(50% - 140px); top:0;
+      transform:rotate(0.5deg);
+      z-index:3;
+    }
+    .about-photo-3 {
+      left:calc(50% + 100px); top:50px;
+      transform:rotate(7deg);
+      z-index:2;
+    }
+    .about-photo:hover {
+      z-index:10;
+      filter:drop-shadow(0 35px 60px rgba(0,0,0,0.7));
+    }
+    .about-photo-1:hover { transform:rotate(3deg) scale(1.07) translateY(-18px); }
+    .about-photo-2:hover { transform:rotate(-2.5deg) scale(1.07) translateY(-20px); }
+    .about-photo-3:hover { transform:rotate(-4deg) scale(1.07) translateY(-16px); }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════ HOMEPAGE ════════════════ -->
+<div class="homepage" id="homepage">
+
+<header class="site-header" id="homeHeader">
+  <button class="showreel" type="button">Showreel</button>
+  <div class="thread" id="thread" role="button" aria-label="Play showreel">
+    <div class="thread-line"></div>
+    <div class="thread-bead"></div>
+  </div>
+  <nav class="nav">
+    <a href="#about">About Me</a>
+    <a href="#contact">Contact</a>
+    <a href="#resume">Resume</a>
+  </nav>
+</header>
+
+<div class="curtain" id="curtain"></div>
+<div class="video-modal" id="videoModal">
+  <iframe id="ytFrame" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+</div>
+<button class="curtain-close" id="curtainClose" aria-label="Close">✕</button>
+
+<section class="carousel-section">
+  <div class="carousel-stage" id="stage">
+    <div class="card" data-index="0" data-project="juspay-brazil"><img src="https://raw.githubusercontent.com/Surbhi977/Homepage/main/Juspay%20Brazil.png" alt="Juspay Brazil"></div>
+    <div class="card" data-index="1" data-project="1-click-pix"><img src="https://raw.githubusercontent.com/Surbhi977/Homepage/main/1%20Click%20Pix.png" alt="1 Click Pix"></div>
+    <div class="card" data-index="2" data-project="banks"><img src="https://raw.githubusercontent.com/Surbhi977/Homepage/main/Banks.png" alt="Juspay for Banks"></div>
+    <div class="card" data-index="3" data-project="design-system"><img src="https://raw.githubusercontent.com/Surbhi977/Homepage/main/Design%20System_option%203.png" alt="Design System"></div>
+    <div class="card" data-index="4" data-project="website"><img src="https://raw.githubusercontent.com/Surbhi977/Homepage/main/Website.png" alt="Juspay Website"></div>
+    <div class="card" data-index="5" data-project="visa"><img src="https://raw.githubusercontent.com/Surbhi977/Homepage/main/Visa.png" alt="Visa Product"></div>
+    <div class="card" data-index="6" data-project="part-payments"><img src="https://raw.githubusercontent.com/Surbhi977/Homepage/main/Part%20payments.png" alt="Part Payments"></div>
+    <div class="card" data-index="7" data-project="xyne"><img src="https://raw.githubusercontent.com/Surbhi977/Homepage/main/Xyne.png" alt="Xyne"></div>
+    <div class="card" data-index="8" data-project="dotp"><img src="https://raw.githubusercontent.com/Surbhi977/Homepage/main/DOTP.png" alt="DOTP"></div>
+  </div>
+  <div class="scroll-hint">Scroll to rotate ↓</div>
+</section>
+
+<footer class="site-footer">
+  <a href="https://www.behance.net/surbhisainiartlove" target="_blank" rel="noopener">Behance</a>
+  <a href="mailto:surbhi.saini97@gmail.com">surbhi.saini97@gmail.com</a>
+  <a href="https://www.linkedin.com/in/surbhi-saini-368909128" target="_blank" rel="noopener">Linkedin</a>
+</footer>
+
+</div>
+
+<!-- ════════ TRANSITION OVERLAY ════════ -->
+<div class="page-overlay" id="pageOverlay"></div>
+
+<!-- ════════════════ PROJECT: DESIGN SYSTEM ════════════════ -->
+<div class="project-page" id="project-design-system">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#portfolio">Portfolio</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="project-title">Design System Launch Film – <span>Blend</span></div>
+
+  <div class="project-hero-media">
+    <iframe data-hero="true" data-src="https://www.youtube.com/embed/DZLg386Xqeg?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+  </div>
+
+  <div class="project-content">
+
+    <div class="reveal">
+      <div class="section-label">Context –</div>
+      <div class="section-text">
+        Blend is Juspay's design system—built to bring consistency and speed across products. The challenge was to create a launch film that reflects not just the visuals, but the behavior of the system.
+      </div>
+      <a class="section-link" href="https://blend.juspay.design/" target="_blank" rel="noopener">https://blend.juspay.design/</a>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="two-col two-col--top reveal">
+      <div>
+        <div class="section-label">Real Challenge</div>
+        <div class="section-text" style="margin-bottom:24px;">Getting alignment on what the video should be.</div>
+        <div class="section-text">
+          There were multiple directions: a slower, explainer-style video a more product-focused direction around Tokenizer
+        </div>
+        <div class="section-text">
+          Neither fully captured what Blend stood for. A design system isn't something you explain—it's something you experience.
+        </div>
+      </div>
+      <div class="col-media">
+        <iframe data-src="https://www.youtube.com/embed/dFT3_NAvRcs?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+      </div>
+    </div>
+
+    <div class="two-col reveal">
+      <div class="col-media">
+        <iframe data-src="https://www.youtube.com/embed/sZ7HRe63ruM?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+      </div>
+      <div>
+        <div class="section-label">What made this tricky</div>
+        <div class="section-text">
+          We weren't just designing motion—we were aligning perspectives. Midway, we also realised something important: If motion is the core of the storytelling, we can't depend on externally created visuals. To make match cuts, rhythm, and transitions feel intentional, motion and visuals had to be designed together.
+        </div>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="reveal">
+      <div class="section-label">Iterations</div>
+      <div class="section-text">
+        The first version looked polished, but lacked flow—it showed the system without really feeling like one. That's when we shifted approach.<br><br>
+        We took ownership of both visuals and motion, building them together instead of separately. This allowed us to design for match cuts, rhythm, and continuity from the ground up—making the film feel cohesive and fast.<br><br>
+        We explored a third direction based on stakeholder feedback, bringing in more focus on Tokenizer. While valid, it pulled the narrative away from the design system. We resolved this by separating the two—keeping this film focused on Blend, and treating Tokenizer as a standalone story.
+      </div>
+    </div>
+
+    <div class="role-card reveal">
+      <div class="section-label">My Role</div>
+      <div class="section-text">Motion design, concept exploration, and shaping both visual + motion direction across iterations.</div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════ PROJECT: JUSPAY WEBSITE ════════════════ -->
+<div class="project-page" id="project-website">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#portfolio">Portfolio</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="project-title">Juspay Website — <span>Motion Case Study</span></div>
+
+  <div class="lottie-trio reveal">
+    <div class="lottie-trio-item">
+      <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/auth%20hero%20bg.json" background="transparent" speed="1" loop></lottie-player>
+    </div>
+    <div class="lottie-trio-item">
+      <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/max%20acceptance.json" background="transparent" speed="1" loop></lottie-player>
+    </div>
+    <div class="lottie-trio-item">
+      <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/multichanel.json" background="transparent" speed="1" loop></lottie-player>
+    </div>
+  </div>
+
+  <div class="project-content">
+
+    <div class="reveal">
+      <div class="section-label">Context –</div>
+      <div class="section-text">
+        Redesigned the Juspay website to position the brand for a global audience. The shift wasn't just visual—it involved rethinking tone, depth, and how the product is presented.
+      </div>
+      <a class="section-link" href="https://juspay.io/br" target="_blank" rel="noopener">https://juspay.io/br</a>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="lottie-fullwidth reveal">
+      <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/Pixel%20Perfect_final.json" background="transparent" speed="1" loop></lottie-player>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="lottie-duo reveal">
+      <div class="lottie-duo-item">
+        <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/Auth%20Hero%20Animation.json" background="transparent" speed="1" loop></lottie-player>
+      </div>
+      <div class="lottie-duo-item">
+        <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/Juspay%20Homepage%20Hero%20Lottie.json" background="transparent" speed="1" loop></lottie-player>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="reveal">
+      <div class="section-label">The Challenge</div>
+      <div class="section-text">
+        Creating motion that feels sleek and premium, while still being lightweight and production-ready.
+      </div>
+    </div>
+
+    <div class="section-spacer" style="height:32px;"></div>
+
+    <div class="reveal">
+      <div class="section-label">What made this tricky</div>
+      <div class="section-text">
+        This wasn't just about designing animations—it was about making them work at scale.
+      </div>
+      <div class="section-text" style="padding-left:20px; border-left:2px solid rgba(255,255,255,0.08);">
+        • Multiple Lotties on a single page affecting load performance<br>
+        • Need for consistency across a new dark visual system<br>
+        • Translating motion into dev-friendly, performant formats
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="feature-img-box reveal">
+      <img class="feature-img-bg" src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/1st%20box.png" alt="Pague com seu Face ID" loading="lazy">
+      <div class="feature-lottie feature-lottie--left">
+        <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/Pay%20with%20Face%20Id.json" background="transparent" speed="1" loop></lottie-player>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="feature-img-box reveal">
+      <img class="feature-img-bg" src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/2nd%20box.png" alt="Checkout Multicanal" loading="lazy">
+      <div class="feature-lottie feature-lottie--left">
+        <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/Juspay-Website/main/MultiChanel%20Checkout.json" background="transparent" speed="1" loop></lottie-player>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="reveal">
+      <div class="section-label">Approach –</div>
+      <div class="section-text">
+        Defined a clear motion direction:<br>
+        — subtle, soft, and premium<br>
+        — no exaggerated or overly playful movement
+      </div>
+      <div class="section-text">
+        Designed Lotties as a system—ensuring consistency across pages while keeping animations lightweight.
+      </div>
+      <div class="section-text">
+        Worked closely with developers to solve performance issues:
+      </div>
+      <div class="section-text" style="padding-left:20px; border-left:2px solid rgba(255,255,255,0.08);">
+        • Removed non-essential animations<br>
+        • Used WebM/video where needed<br>
+        • Transitioned to Lottie format to reduce file size without compromising quality
+      </div>
+      <div class="section-text">
+        Also took ownership of aligning motion across teams and driving implementation forward.
+      </div>
+    </div>
+
+    <div class="role-card reveal">
+      <div class="section-label">My Role</div>
+      <div class="section-text">Motion design, defining motion principles, Lottie creation, cross-team alignment, and developer collaboration</div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════ PROJECT: VISA ════════════════ -->
+<div class="project-page" id="project-visa">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#portfolio">Portfolio</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="project-title">Visa – <span>Motion Case Study</span></div>
+
+  <div class="project-content">
+
+    <div class="visa-hero-grid reveal">
+      <div class="visa-lottie-hero">
+        <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/VISA/main/1st%20lottie.json" background="transparent" speed="1" loop></lottie-player>
+      </div>
+      <div>
+        <div class="section-label">Context –</div>
+        <div class="section-text">
+          Southeast Asia runs on QR payments—but each country operates on its own standard (QRIS, PromptPay, NETS). These systems don't talk to each other, making cross-border payments fragmented.
+        </div>
+        <div class="section-text">
+          Visa's goal was to enable a single, seamless payment experience across countries, embedded inside existing wallet apps.
+        </div>
+
+        <div class="section-spacer" style="height:40px;"></div>
+
+        <div class="section-label">The Challenge –</div>
+        <div class="section-text">
+          Design motion for a system that is:
+        </div>
+        <div class="section-text" style="padding-left:20px; border-left:2px solid rgba(255,255,255,0.08);">
+          • invisible infrastructure<br>
+          • used inside multiple third-party wallets<br>
+          • expected to feel instantly understandable in unfamiliar contexts
+        </div>
+        <div class="section-text">
+          The animations had to communicate "how this works" in seconds, without relying on text or explanation.
+        </div>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="visa-lottie-container reveal">
+      <div class="visa-lottie-trio">
+        <div class="visa-lottie-item">
+          <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/VISA/main/Scan%20to%20pay_Android.json" background="transparent" speed="1" loop></lottie-player>
+        </div>
+        <div class="visa-lottie-item">
+          <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/VISA/main/2nd.json" background="transparent" speed="1" loop></lottie-player>
+        </div>
+        <div class="visa-lottie-item">
+          <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/VISA/main/VISA_Scan%20to%20pay_IOS.json" background="transparent" speed="1" loop></lottie-player>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="reveal">
+      <div class="section-label">What made this tricky –</div>
+      <div class="section-text">
+        This wasn't about complex animation—it was about clarity and constraints.
+      </div>
+      <div class="section-text" style="padding-left:20px; border-left:2px solid rgba(255,255,255,0.08);">
+        • Aligning motion across multiple stakeholders<br>
+        • Adapting to different design systems without breaking their visual language<br>
+        • Communicating new payment flows (scan / tap) through minimal motion<br>
+        • Handling a strong push for 3D visuals—which Lottie doesn't support directly
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="reveal">
+      <div class="section-label">Approach –</div>
+      <div class="section-text">
+        Focused on clarity-first motion:<br>
+        → simple, readable, and instructional<br>
+        → designed for quick understanding at a glance
+      </div>
+      <div class="section-text">
+        Defined motion patterns for:
+      </div>
+      <div class="section-text" style="padding-left:20px; border-left:2px solid rgba(255,255,255,0.08);">
+        • tap-to-pay<br>
+        • scan-to-pay<br>
+        • Visa branding moments
+      </div>
+      <div class="section-text">
+        For the 3D requirement:
+      </div>
+      <div class="section-text" style="padding-left:20px; border-left:2px solid rgba(255,255,255,0.08);">
+        • Adapted fake 3D visuals within Lottie constraints<br>
+        • balanced depth with file size and performance<br>
+        • avoided heavy assets while still achieving the intended visual feel
+      </div>
+    </div>
+
+    <div class="role-card reveal">
+      <div class="section-label">My Role</div>
+      <div class="section-text">Lottie creation, motion alignment across teams, and translating product flows into clear animation.</div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════ PROJECT: DOTP ════════════════ -->
+<div class="project-page" id="project-dotp">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#portfolio">Portfolio</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="project-title">Direct <span>OTP</span></div>
+
+  <div class="project-content">
+
+    <div class="dotp-hero-grid reveal">
+      <div class="dotp-lottie-hero">
+        <div class="dotp-video-wrapper">
+          <iframe data-hero="true" data-src="https://www.youtube.com/embed/YKKG9L6NhJc?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+      <div>
+        <div class="section-text">
+          Designed motion for Direct OTP (DOTP) for cards, a feature that auto-detects and submits OTPs during payments—removing the need for manual input.
+        </div>
+
+        <div class="section-spacer" style="height:40px;"></div>
+
+        <div class="section-text">
+          Created a set of Lottie animations for key moments:
+        </div>
+        <div class="section-text" style="padding-left:20px; border-left:2px solid rgba(255,255,255,0.08);">
+          • OTP Detection<br>
+          • Processing State<br>
+          • Payment Success
+        </div>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="reveal">
+      <div class="section-text">
+        The goal was to make the experience feel instant, seamless, and secure.
+      </div>
+      <div class="section-text">
+        Explored multiple visual directions (8+ variations), refining motion, timing, and feedback to communicate speed and trust without adding friction.
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="dotp-lottie-row reveal">
+      <div class="dotp-lottie-item">
+        <div class="dotp-video-wrapper">
+          <iframe data-src="https://www.youtube.com/embed/cTVJeKzFqJ4?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="dotp-lottie-item">
+        <div class="dotp-video-wrapper">
+          <iframe data-src="https://www.youtube.com/embed/aXQR9OIpYnw?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="dotp-lottie-item">
+        <div class="dotp-video-wrapper">
+          <iframe data-src="https://www.youtube.com/embed/BJxWo9yo1Tk?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="dotp-lottie-row reveal">
+      <div class="dotp-lottie-item">
+        <div class="dotp-video-wrapper">
+          <iframe data-src="https://www.youtube.com/embed/kNs_frwEDlM?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="dotp-lottie-item">
+        <div class="dotp-video-wrapper">
+          <iframe data-src="https://www.youtube.com/embed/2UKOmCuDbvM?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="dotp-lottie-item">
+        <div class="dotp-video-wrapper">
+          <iframe data-src="https://www.youtube.com/embed/3Z6Aw09eazE?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════ PROJECT: BANKS ════════════════ -->
+<div class="project-page" id="project-banks">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#portfolio">Portfolio</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="project-title">Juspay for Banks <span>Video</span></div>
+
+  <div class="project-content">
+
+    <div class="project-hero-media reveal">
+      <iframe data-hero="true" data-src="https://www.youtube.com/embed/5EapkOQcLAU?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+    </div>
+
+    <div class="reveal">
+      <div class="section-text" style="text-align:justify;">
+        Banks video by Juspay focuses on enabling banks to move faster and stay competitive in the evolving fintech landscape.
+      </div>
+      <div class="section-text" style="text-align:justify;">
+        Worked on a launch video exploring this idea—where the initial version fell flat in terms of visual and motion direction. We reworked it into a more refreshing and engaging style, and I contributed to the motion for a key section of the film.
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <div class="banks-video-duo reveal">
+      <div class="banks-video-item">
+        <iframe data-src="https://www.youtube.com/embed/Tz33d8bN5Oc?rel=0&modestbranding=1&autoplay=1&mute=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+      </div>
+      <div class="banks-video-item">
+        <iframe data-src="https://www.youtube.com/embed/SYSEAF4jL_A?rel=0&modestbranding=1&autoplay=1&mute=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════ PROJECT: 1 CLICK PIX ════════════════ -->
+<div class="project-page" id="project-1-click-pix">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#portfolio">Portfolio</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="project-title">1 Click <span>Pix</span></div>
+
+  <div class="project-content">
+
+    <div class="project-hero-media reveal">
+      <iframe data-hero="true" data-src="https://www.youtube.com/embed/fo0CBuZ5X1w?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+    </div>
+
+    <div class="reveal">
+      <div class="section-text">
+        OneClickPix is Juspay's solution built on Brazil's Pix ecosystem, enabling one-tap, biometric payments directly within apps—removing the need for QR scanning or redirects and making checkout significantly faster and smoother.
+      </div>
+    </div>
+
+    <div class="section-spacer" style="height:32px;"></div>
+
+    <div class="reveal">
+      <div class="section-text">
+        I handled the motion end-to-end for this project.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════ PROJECT: XYNE ════════════════ -->
+<div class="project-page" id="project-xyne">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#portfolio">Portfolio</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="project-title">Xyne</div>
+
+  <div class="project-content">
+
+    <!-- Hero video -->
+    <div class="project-hero-media reveal">
+      <iframe data-hero="true" data-src="https://www.youtube.com/embed/nWpNc34JMWQ?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+    </div>
+
+    <!-- First text -->
+    <div class="reveal">
+      <div class="section-text">
+        Xyne was a product built to make enterprise information easily accessible—bringing data from tools like Google Drive, Sheets, and Slack into one place, just a search away.
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <!-- Two videos side by side -->
+    <div class="banks-video-duo reveal">
+      <div class="banks-video-item">
+        <iframe data-src="https://www.youtube.com/embed/lCfWNfvgl4Q?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+      </div>
+      <div class="banks-video-item">
+        <iframe data-src="https://www.youtube.com/embed/u0vTgOKcqzM?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <!-- Second text -->
+    <div class="reveal">
+      <div class="section-text" style="text-align:justify;">
+        I worked on this end-to-end—concept, script, storyboard, visual design, animation, compositing, and music—creating a quirky video that highlights how simple and useful the product is.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════ PROJECT: JUSPAY BRAZIL ════════════════ -->
+<div class="project-page" id="project-juspay-brazil">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#portfolio">Portfolio</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="project-title">Juspay <span>Brazil</span></div>
+
+  <div class="project-content">
+
+    <!-- Hero video -->
+    <div class="project-hero-media reveal">
+      <iframe data-hero="true" data-src="https://www.youtube.com/embed/_a7yoZLf4hc?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+    </div>
+
+    <!-- First text -->
+    <div class="reveal">
+      <div class="section-text">
+        Worked on a Juspay Brazil project focused on the OneClickPix experience, showcasing how one-tap Pix payments simplify checkout flows.
+      </div>
+    </div>
+
+    <div class="section-spacer" style="height:24px;"></div>
+
+    <!-- Second text -->
+    <div class="reveal">
+      <div class="section-text" style="text-align:justify;">
+        As part of the motion team, I contributed to a specific sequence within the video—designing animations that align with the overall style while clearly communicating the interaction.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════ PROJECT: PART PAYMENTS ════════════════ -->
+<div class="project-page" id="project-part-payments">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#portfolio">Portfolio</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="project-title">Part <span>Payments</span></div>
+
+  <div class="project-content">
+
+    <!-- Hero video -->
+    <div class="project-hero-media reveal">
+      <iframe data-hero="true" data-src="https://www.youtube.com/embed/P4wtPQdPvRE?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+    </div>
+
+    <!-- First text -->
+    <div class="reveal">
+      <div class="section-text">
+        Part Payments is a feature designed for high-value purchases, allowing users to split payments across multiple people or convert them into manageable plans.
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <!-- Two videos side by side -->
+    <div class="banks-video-duo reveal">
+      <div class="banks-video-item">
+        <iframe data-src="https://www.youtube.com/embed/JH02tR1SxnY?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+      </div>
+      <div class="banks-video-item">
+        <iframe data-src="https://www.youtube.com/embed/LveWbq6iHb8?rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>
+      </div>
+    </div>
+
+    <div class="section-spacer"></div>
+
+    <!-- Second text -->
+    <div class="reveal">
+      <div class="section-text" style="text-align:justify;">
+        I worked on shaping the concept—contributing to the script and storyboard alongside the team—and then collaborated on the motion to bring the idea to life within a tight timeline.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════ ABOUT ME ════════════════ -->
+<div class="project-page" id="about-me">
+
+  <header class="project-header">
+    <button class="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Home
+    </button>
+    <nav class="project-nav">
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <div class="about-content">
+
+    <div class="about-hero-title">
+      <lottie-player data-lottie-src="https://raw.githubusercontent.com/Surbhi977/About-me/main/hi%20Surbhi.json" background="transparent" speed="1" loop></lottie-player>
+    </div>
+
+    <div class="about-paragraphs">
+      <p class="about-text reveal">
+        I've been working as a motion designer for 4+ years—somewhere between figuring out what the idea is and how it should move. I like working end-to-end, which usually means I'm involved in everything from "what are we even making?" to "okay this easing is slightly off." Most of my work sits around product, motion, and clarity—basically taking things that are slightly confusing and making them feel obvious (or at least less confusing).
+      </p>
+      <p class="about-text reveal">
+        When I'm not doing that, I'm painting, setting up a doodle booth on streets of HSR, setting up a stall in flea markets, creating tiny magnets from clay or searching for cats!
+      </p>
+      <p class="about-text-small reveal">
+        If you find a cat to pspspsps.. contact me on <a href="mailto:sur.saini97@gmail.com">sur.saini97@gmail.com</a>
+      </p>
+    </div>
+
+    <!-- Polaroid collage -->
+    <div class="about-photos reveal">
+      <div class="about-photo about-photo-1">
+        <div class="about-photo-img">
+          <img src="https://raw.githubusercontent.com/Surbhi977/About-me/main/1.png" alt="" loading="lazy">
+        </div>
+      </div>
+      <div class="about-photo about-photo-2">
+        <div class="about-photo-img">
+          <img src="https://raw.githubusercontent.com/Surbhi977/About-me/main/2.png" alt="" loading="lazy">
+        </div>
+      </div>
+      <div class="about-photo about-photo-3">
+        <div class="about-photo-img">
+          <img src="https://raw.githubusercontent.com/Surbhi977/About-me/main/3.png" alt="" loading="lazy">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  const cards = gsap.utils.toArray('.card');
+  const N = cards.length;
+  const RADIUS = 1050;
+  const HOVER_LIFT = -60;
+  const HOVER_SCALE = 1.18;
+  const CARD_ANGLE_STEP = 14;
+
+  function angleFor(offset) { return offset * CARD_ANGLE_STEP; }
+  function wrappedOffset(rawOff) { return ((rawOff + N/2) % N + N) % N - N/2; }
+
+  function baseProps(offset) {
+    const angle = angleFor(offset);
+    const rad = angle * Math.PI / 180;
+    return {
+      x: RADIUS * Math.sin(rad),
+      y: RADIUS * (1 - Math.cos(rad)),
+      rotation: angle,
+      zIndex: Math.round(100 - Math.abs(offset) * 8),
+      opacity: Math.max(0, Math.min(1, (4.5 - Math.abs(offset)) * 1.5))
+    };
+  }
+
+  let hoveredCard = null, centerOffset = 0;
+  let isScrolling = false, scrollTimer = null, lastProgress = 0;
+  let isTransitioning = false;
+
+  function applyCard(card, offset, animateType) {
+    const p = baseProps(offset);
+    const target = { ...p, scale:1 };
+    if (card === hoveredCard && !isScrolling) {
+      target.y += HOVER_LIFT;
+      target.scale = HOVER_SCALE;
+      target.zIndex = 1000;
+      card.classList.add('hovered');
+    } else {
+      card.classList.remove('hovered');
+    }
+    if (animateType === 'hover-in') gsap.to(card, { ...target, duration:0.65, ease:'power3.out', overwrite:'auto' });
+    else if (animateType === 'hover-out') gsap.to(card, { ...target, duration:0.35, ease:'power2.out', overwrite:'auto' });
+    else gsap.set(card, target);
+  }
+
+  function dimOtherCards(c) { cards.forEach(x => { if (x !== c) x.classList.add('dimmed'); }); }
+  function undimAllCards() { cards.forEach(x => x.classList.remove('dimmed')); }
+
+  function clearHover() {
+    if (!hoveredCard) return;
+    const c = hoveredCard; hoveredCard = null;
+    applyCard(c, wrappedOffset(cards.indexOf(c) - centerOffset), 'hover-out');
+    undimAllCards();
+  }
+
+  function updateAll(co) {
+    centerOffset = co;
+    const delta = Math.abs(co - lastProgress);
+    if (delta > 0.005) {
+      isScrolling = true;
+      if (hoveredCard) clearHover();
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => { isScrolling = false; }, 150);
+    }
+    lastProgress = co;
+    cards.forEach((card, i) => applyCard(card, wrappedOffset(i - co), false));
+  }
+
+  gsap.set(cards, { xPercent:-50, yPercent:-50 });
+  updateAll(0);
+  cards.forEach(c => c.classList.add('ready'));
+
+  const st = ScrollTrigger.create({
+    trigger:'.carousel-section', start:'top top',
+    end:'+=' + ((N-1)*100) + '%',
+    pin:true, pinSpacing:true, scrub:0.6,
+    snap:{ snapTo:1/(N-1), duration:{min:0.2,max:0.5}, delay:0, ease:'power2.inOut' },
+    onUpdate(self) { updateAll(self.progress * (N-1)); }
+  });
+
+  // Hover
+  cards.forEach((card, i) => {
+    card.addEventListener('mouseenter', () => {
+      if (isScrolling || isTransitioning) return;
+      hoveredCard = card;
+      applyCard(card, wrappedOffset(i - centerOffset), 'hover-in');
+      dimOtherCards(card);
+    });
+    card.addEventListener('mouseleave', () => {
+      if (hoveredCard !== card) return;
+      hoveredCard = null;
+      applyCard(card, wrappedOffset(i - centerOffset), 'hover-out');
+      undimAllCards();
+    });
+  });
+
+  // ── CARD CLICK → PROJECT PAGE ──────────────────────
+  const homepageEl = document.getElementById('homepage');
+  const overlay = document.getElementById('pageOverlay');
+
+  const projectPages = {
+    'design-system': document.getElementById('project-design-system'),
+    'website': document.getElementById('project-website'),
+    'visa': document.getElementById('project-visa'),
+    'dotp': document.getElementById('project-dotp'),
+    'banks': document.getElementById('project-banks'),
+    '1-click-pix': document.getElementById('project-1-click-pix'),
+    'xyne': document.getElementById('project-xyne'),
+    'juspay-brazil': document.getElementById('project-juspay-brazil'),
+    'part-payments': document.getElementById('project-part-payments'),
+    'about-me': document.getElementById('about-me')
+  };
+
+  let activeProject = null;
+
+  function goBackToHomepage() {
+    if (isTransitioning || !activeProject) return;
+    isTransitioning = true;
+    cleanupProjectObservers();
+
+    const tl = gsap.timeline();
+    tl.to(overlay, { opacity:1, duration:0.35, ease:'power2.inOut' });
+    tl.add(() => {
+      activeProject.classList.remove('active');
+      const ph = activeProject.querySelector('.project-header');
+      const pt = activeProject.querySelector('.project-title');
+      const heroEl = activeProject.querySelector('.project-hero-media') || activeProject.querySelector('.lottie-trio');
+      if (ph) { ph.classList.remove('header-hidden'); gsap.set(ph, { clearProps:'all' }); }
+      if (pt) gsap.set(pt, { clearProps:'all' });
+      if (heroEl) gsap.set(heroEl, { clearProps:'all' });
+      activeProject = null;
+      homepageEl.classList.remove('hidden');
+      cards.forEach(c => { gsap.set(c, { opacity:1, scale:1 }); c.classList.remove('dimmed','hovered'); });
+      gsap.set(['.site-header','.site-footer','.scroll-hint'], { opacity:1 });
+      updateAll(centerOffset);
+      window.scrollTo(0, 0);
+      st.enable();
+      ScrollTrigger.refresh();
+    });
+    tl.to(overlay, { opacity:0, duration:0.5, ease:'power2.out', onComplete:() => { isTransitioning = false; } });
+  }
+
+  cards.forEach((card, i) => {
+    card.addEventListener('click', () => {
+      if (isTransitioning) return;
+      const pid = card.dataset.project;
+      const page = projectPages[pid];
+      if (!page) return;
+
+      isTransitioning = true;
+      activeProject = page;
+      hoveredCard = null;
+      undimAllCards();
+      history.pushState({ project: pid }, '', '#' + pid);
+
+      const others = cards.filter(c => c !== card);
+      const tl = gsap.timeline();
+
+      tl.to(others, { opacity:0, duration:0.45, ease:'power2.in', stagger:0.015 })
+        .to(['.site-header', '.site-footer', '.scroll-hint'], { opacity:0, duration:0.35, ease:'power2.in' }, '<');
+
+      tl.to(card, { x:0, y:-20, rotation:0, scale:1.3, zIndex:2000, duration:0.65, ease:'power3.inOut' }, '-=0.2');
+
+      tl.to(overlay, { opacity:1, duration:0.4, ease:'power2.inOut' }, '-=0.15')
+        .to(card, { scale:5, opacity:0, duration:0.45, ease:'power2.in' }, '-=0.25');
+
+      tl.add(() => {
+        homepageEl.classList.add('hidden');
+        page.classList.add('active');
+        st.disable();
+        window.scrollTo(0, 0);
+        page.querySelectorAll('.reveal').forEach(el => el.classList.remove('visible'));
+        const ph = page.querySelector('.project-header');
+        const pt = page.querySelector('.project-title');
+        const heroEl = page.querySelector('.project-hero-media') || page.querySelector('.lottie-trio');
+        if (ph) gsap.set(ph, { y:-30, opacity:0 });
+        if (pt) gsap.set(pt, { y:40, opacity:0 });
+        if (heroEl) gsap.set(heroEl, { y:60, opacity:0, scale:0.97 });
+      });
+
+      const ph = page.querySelector('.project-header');
+      const pt = page.querySelector('.project-title');
+      const heroEl = page.querySelector('.project-hero-media') || page.querySelector('.lottie-trio');
+
+      tl.to(overlay, { opacity:0, duration:0.55, ease:'power2.out' });
+      if (ph) tl.to(ph, { y:0, opacity:1, duration:0.45, ease:'power2.out' }, '-=0.35');
+      if (pt) tl.to(pt, { y:0, opacity:1, duration:0.5, ease:'power2.out' }, '-=0.25');
+      if (heroEl) tl.to(heroEl, { y:0, opacity:1, scale:1, duration:0.6, ease:'power2.out' }, '-=0.25');
+      tl.add(() => {
+          isTransitioning = false;
+          initScrollReveals(page);
+          initProjectHeaderHide(page);
+          observeLottiesIn(page);
+          observeIframesIn(page);
+        });
+    });
+  });
+
+  // ── ABOUT ME (nav link) → PROJECT PAGE ─────────────
+  function openSimplePage(pageId) {
+    if (isTransitioning) return;
+    const page = projectPages[pageId];
+    if (!page) return;
+
+    isTransitioning = true;
+    activeProject = page;
+    hoveredCard = null;
+    undimAllCards();
+    history.pushState({ project: pageId }, '', '#' + pageId);
+
+    const tl = gsap.timeline();
+    tl.to(cards, { opacity:0, duration:0.4, ease:'power2.in', stagger:0.012 })
+      .to(['.site-header', '.site-footer', '.scroll-hint'], { opacity:0, duration:0.35, ease:'power2.in' }, '<');
+    tl.to(overlay, { opacity:1, duration:0.4, ease:'power2.inOut' }, '-=0.15');
+    tl.add(() => {
+      homepageEl.classList.add('hidden');
+      page.classList.add('active');
+      st.disable();
+      window.scrollTo(0, 0);
+      page.querySelectorAll('.reveal').forEach(el => el.classList.remove('visible'));
+      const ph = page.querySelector('.project-header');
+      const pt = page.querySelector('.about-hero-title') || page.querySelector('.project-title');
+      if (ph) gsap.set(ph, { y:-30, opacity:0 });
+      if (pt) gsap.set(pt, { y:40, opacity:0 });
+    });
+    tl.to(overlay, { opacity:0, duration:0.55, ease:'power2.out' });
+    const ph = page.querySelector('.project-header');
+    const pt = page.querySelector('.about-hero-title') || page.querySelector('.project-title');
+    if (ph) tl.to(ph, { y:0, opacity:1, duration:0.45, ease:'power2.out' }, '-=0.35');
+    if (pt) tl.to(pt, { y:0, opacity:1, duration:0.55, ease:'power2.out' }, '-=0.25');
+    tl.add(() => {
+      isTransitioning = false;
+      initScrollReveals(page);
+      initProjectHeaderHide(page);
+      observeLottiesIn(page);
+      observeIframesIn(page);
+    });
+  }
+
+  document.querySelectorAll('a[href="#about"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      openSimplePage('about-me');
+    });
+  });
+
+  // ── BACK TO HOMEPAGE ───────────────────────────────
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.back-btn');
+    if (!btn || isTransitioning || !activeProject) return;
+    history.pushState({ project: null }, '', window.location.pathname);
+    goBackToHomepage();
+  });
+
+  window.addEventListener('popstate', () => {
+    if (activeProject) goBackToHomepage();
+  });
+
+  // ── SCROLL HINT ────────────────────────────────────
+  const hint = document.querySelector('.scroll-hint');
+  let hintHidden = false;
+  window.addEventListener('scroll', () => {
+    if (!hintHidden && window.scrollY > 40) { gsap.to(hint, { opacity:0, duration:0.4 }); hintHidden = true; }
+  }, { passive:true });
+
+  // ── SHOWREEL ───────────────────────────────────────
+  const VIDEO_ID = 'p9nPUKfOcZI';
+  const showreel = document.querySelector('.showreel');
+  const thread = document.getElementById('thread');
+  const curtainEl = document.getElementById('curtain');
+  const modal = document.getElementById('videoModal');
+  const ytFrame = document.getElementById('ytFrame');
+  const closeBtn = document.getElementById('curtainClose');
+  let isOpen = false;
+
+  function openShowreel() {
+    if (isOpen) return; isOpen = true;
+    thread.classList.add('pulling');
+    document.body.style.overflow = 'hidden';
+    const tl = gsap.timeline();
+    tl.to(thread, { height:window.innerHeight-80, duration:0.85, ease:'power3.in' })
+      .to(curtainEl, { opacity:1, duration:0.5, ease:'power2.inOut', onStart:()=>curtainEl.classList.add('active') }, '-=0.45')
+      .add(() => { ytFrame.src = `https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&rel=0&modestbranding=1`; })
+      .to(modal, { opacity:1, scale:1, duration:0.6, ease:'back.out(1.4)', onStart:()=>modal.classList.add('active') }, '+=0.1')
+      .to(closeBtn, { opacity:1, duration:0.3, onStart:()=>closeBtn.classList.add('active') }, '-=0.3');
+  }
+  function closeShowreel() {
+    if (!isOpen) return; isOpen = false;
+    const tl = gsap.timeline({ onComplete:() => {
+      ytFrame.src=''; modal.classList.remove('active'); curtainEl.classList.remove('active');
+      closeBtn.classList.remove('active'); thread.classList.remove('pulling');
+      gsap.set(thread, { height:44, clearProps:'transform' }); document.body.style.overflow='';
+    }});
+    tl.to(closeBtn, { opacity:0, duration:0.2 })
+      .to(modal, { opacity:0, scale:0.94, duration:0.35, ease:'power2.in' }, '<')
+      .to(curtainEl, { opacity:0, duration:0.45, ease:'power2.inOut' }, '-=0.15')
+      .to(thread, { height:44, duration:0.5, ease:'power2.out' }, '-=0.3');
+  }
+  showreel.addEventListener('click', openShowreel);
+  thread.addEventListener('click', openShowreel);
+  closeBtn.addEventListener('click', closeShowreel);
+  curtainEl.addEventListener('click', e => { if (e.target === curtainEl) closeShowreel(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeShowreel(); });
+
+  // ── PROJECT PAGE: SCROLL REVEALS ───────────────────
+  let revealObserver = null;
+  let headerScrollHandler = null;
+
+  function initScrollReveals(page) {
+    const els = page.querySelectorAll('.reveal');
+    revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(el => revealObserver.observe(el));
+  }
+
+  function initProjectHeaderHide(page) {
+    const header = page.querySelector('.project-header');
+    let lastScrollY = 0;
+    let ticking = false;
+
+    headerScrollHandler = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        if (currentY > 120 && currentY > lastScrollY) {
+          header.classList.add('header-hidden');
+        } else {
+          header.classList.remove('header-hidden');
+        }
+        lastScrollY = currentY;
+        ticking = false;
+      });
+    };
+    window.addEventListener('scroll', headerScrollHandler, { passive: true });
+  }
+
+  function cleanupProjectObservers() {
+    if (revealObserver) { revealObserver.disconnect(); revealObserver = null; }
+    if (headerScrollHandler) { window.removeEventListener('scroll', headerScrollHandler); headerScrollHandler = null; }
+  }
+
+  // ── LAZY LOADING: IFRAMES (Intersection Observer) ──────
+  const loadedIframes = new WeakSet();
+
+  function setupHeroIframe(iframe, src) {
+    const videoId = src.match(/embed\/([^?]+)/)?.[1];
+    if (!videoId) return;
+    const wrapper = iframe.closest('.project-hero-media') || iframe.closest('.dotp-video-wrapper');
+    if (!wrapper || wrapper.classList.contains('hero-play-wrapper')) return;
+    wrapper.classList.add('hero-play-wrapper');
+    wrapper.style.backgroundImage = `url(https://img.youtube.com/vi/${videoId}/hqdefault.jpg)`;
+    wrapper.style.backgroundSize = 'cover';
+    wrapper.style.backgroundPosition = 'center';
+
+    const overlay = document.createElement('div');
+    overlay.className = 'hero-play-overlay';
+    overlay.innerHTML = `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="36" r="36" fill="rgba(255,255,255,0.15)"/>
+      <path d="M29 22L52 36L29 50V22Z" fill="#fff"/>
+    </svg>`;
+    wrapper.appendChild(overlay);
+
+    overlay.addEventListener('click', () => {
+      overlay.classList.add('hidden');
+      iframe.src = src + (src.includes('?') ? '&' : '?') + 'autoplay=1';
+    });
+  }
+
+  function loadIframe(iframe) {
+    if (loadedIframes.has(iframe)) return;
+    const src = iframe.dataset.src;
+    if (!src) return;
+    loadedIframes.add(iframe);
+
+    if (iframe.hasAttribute('data-hero')) {
+      setupHeroIframe(iframe, src);
+    } else {
+      let finalSrc = src;
+      if (!finalSrc.includes('autoplay=1')) {
+        finalSrc += (finalSrc.includes('?') ? '&' : '?') + 'autoplay=1&mute=1';
+      }
+      iframe.src = finalSrc;
+    }
+  }
+
+  const iframeLazyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        loadIframe(entry.target);
+        iframeLazyObserver.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '200px 0px', threshold: 0 });
+
+  function observeIframesIn(root) {
+    (root || document).querySelectorAll('iframe[data-src]').forEach(iframe => {
+      if (!loadedIframes.has(iframe)) {
+        iframeLazyObserver.observe(iframe);
+      }
+    });
+  }
+
+  // Observe homepage iframes immediately
+  observeIframesIn(document);
+
+  // ── LAZY LOADING: LOTTIE ANIMATIONS ────────────────────
+  // lottie-player is a custom element — we must wait for it to be defined,
+  // and we must use its .load() method rather than just setting the src attribute.
+  // Project pages start as display:none, so their Lotties have zero dimensions
+  // and will never intersect — we re-observe them when a project page opens.
+
+  const loadedLotties = new WeakSet();
+
+  function loadLottie(player) {
+    if (loadedLotties.has(player)) return;
+    const src = player.getAttribute('data-lottie-src');
+    if (!src) return;
+    loadedLotties.add(player);
+    player.removeAttribute('data-lottie-src');
+    player.setAttribute('autoplay', '');
+    // Use the .load() method if the custom element is upgraded,
+    // otherwise set src and let the element pick it up on upgrade.
+    player.setAttribute('src', src);
+    if (typeof player.load === 'function') {
+      player.load(src);
+    }
+  }
+
+  let lottieLazyObserver = null;
+
+  if ('IntersectionObserver' in window) {
+    lottieLazyObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          loadLottie(entry.target);
+          lottieLazyObserver.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '400px 0px', threshold: 0 });
+  }
+
+  function observeLottiesIn(root) {
+    const players = (root || document).querySelectorAll('lottie-player[data-lottie-src]');
+    if (lottieLazyObserver) {
+      players.forEach(p => lottieLazyObserver.observe(p));
+    } else {
+      // Fallback: no IntersectionObserver — load all immediately
+      players.forEach(p => loadLottie(p));
+    }
+  }
+
+  // Wait for the lottie-player custom element to be defined before observing.
+  // This guarantees the elements have proper dimensions and .load() is available.
+  function initLottieLazyLoading() {
+    if (customElements.get('lottie-player')) {
+      observeLottiesIn(document);
+    } else {
+      customElements.whenDefined('lottie-player').then(() => {
+        observeLottiesIn(document);
+      }).catch(() => {
+        // Final fallback: if whenDefined rejects, just load everything after a delay
+        setTimeout(() => {
+          document.querySelectorAll('lottie-player[data-lottie-src]').forEach(p => loadLottie(p));
+        }, 3000);
+      });
+    }
+  }
+
+  // The lottie-player script may load async, so also listen for DOMContentLoaded / load
+  if (document.readyState === 'complete') {
+    initLottieLazyLoading();
+  } else {
+    window.addEventListener('load', initLottieLazyLoading);
+  }
+
+  // Fallback timeout: if nothing has loaded after 6s, force-load all remaining Lotties
+  setTimeout(() => {
+    document.querySelectorAll('lottie-player[data-lottie-src]').forEach(p => loadLottie(p));
+  }, 6000);
+</script>
+</body>
+</html>

@@ -160,7 +160,7 @@
     .site-footer a:hover { color:#fff; }
 
     /* ── TRANSITION OVERLAY ───────────────────── */
-    .page-overlay { position:fixed; inset:0; background:#242426; z-index:500; opacity:0; pointer-events:none; }
+    .page-overlay { position:fixed; inset:0; background:#242426; z-index:9999; opacity:0; pointer-events:none; will-change:opacity; transform:translateZ(0); }
 
     /* ── HOMEPAGE WRAPPER ────────────────────── */
     .homepage.hidden { display:none; }
@@ -1544,18 +1544,13 @@
       undimAllCards();
       history.pushState({ project: pid }, '', '#' + pid);
 
-      const others = cards.filter(c => c !== card);
       const tl = gsap.timeline();
 
-      tl.to(others, { opacity:0, duration:0.45, ease:'power2.in', stagger:0.015 })
-        .to(['.site-header', '.site-footer', '.scroll-hint'], { opacity:0, duration:0.35, ease:'power2.in' }, '<');
-
-      tl.to(card, { x:0, y:-20, rotation:0, scale:1.3, zIndex:2000, duration:0.65, ease:'power3.inOut' }, '-=0.2');
-
-      tl.to(overlay, { opacity:1, duration:0.4, ease:'power2.inOut' }, '-=0.15')
-        .to(card, { scale:5, opacity:0, duration:0.45, ease:'power2.in' }, '-=0.25');
+      tl.to(overlay, { opacity:1, duration:0.4, ease:'power2.inOut' });
 
       tl.add(() => {
+        cards.forEach(c => gsap.set(c, { opacity:0 }));
+        gsap.set(['.site-header','.site-footer','.scroll-hint'], { opacity:0 });
         homepageEl.classList.add('hidden');
         page.classList.add('active');
         st.disable();
@@ -1600,8 +1595,10 @@
     history.pushState({ project: pageId }, '', '#' + pageId);
 
     const tl = gsap.timeline();
-    tl.to(overlay, { opacity:1, duration:0.45, ease:'power2.inOut' });
+    tl.to(overlay, { opacity:1, duration:0.4, ease:'power2.inOut' });
     tl.add(() => {
+      cards.forEach(c => gsap.set(c, { opacity:0 }));
+      gsap.set(['.site-header','.site-footer','.scroll-hint'], { opacity:0 });
       homepageEl.classList.add('hidden');
       page.classList.add('active');
       st.disable();
